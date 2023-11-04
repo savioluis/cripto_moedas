@@ -1,6 +1,7 @@
 import 'package:cripto_moedas/models/moeda.dart';
 
 class MoedasRepository {
+  bool isSorted = false;
 
   static List<Moeda> tabela = [
     Moeda(
@@ -40,7 +41,15 @@ class MoedasRepository {
       preco: 3.34,
     ),
   ];
-  
 
-
+  void sort() {
+    if (!isSorted) {
+      tabela.sort((Moeda a, Moeda b) => a.preco.compareTo(b.preco));
+    } else {
+      tabela.sort((Moeda a, Moeda b) => b.preco.compareTo(a.preco));
+      // tabela = tabela.reversed.toList();
+      // Por que nao atualiza se for uma reatribuicao, somente funciona se for em uma funcao void ?
+    }
+    isSorted = !isSorted;
+  }
 }

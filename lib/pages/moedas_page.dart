@@ -11,14 +11,37 @@ class MoedasPage extends StatefulWidget {
 }
 
 class _MoedasPageState extends State<MoedasPage> {
-  final List<Moeda> tabela = MoedasRepository.tabela;
   NumberFormat real = NumberFormat.currency(locale: 'pt_BR', name: 'R\$');
   List<Moeda> moedasSelecionadas = [];
+  List<Moeda> tabela = MoedasRepository.tabela;
+  final moedasRepository = MoedasRepository();
+
+  @override
+  void initState() {
+    super.initState();
+    moedasRepository.sort();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Cripto Moedas")),
+      appBar: AppBar(
+        title: const Text("Cripto Moedas"),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: IconButton(
+              onPressed: () => setState(() {
+                moedasRepository.sort();
+              }),
+              icon: const Icon(
+                Icons.swap_vert_circle,
+                size: 32,
+              ),
+            ),
+          ),
+        ],
+      ),
       body: ListView.separated(
         shrinkWrap: true,
         itemBuilder: (context, moeda) {
@@ -37,7 +60,7 @@ class _MoedasPageState extends State<MoedasPage> {
                     ),
                   )
                 : SizedBox(
-                    width: 48,
+                    height: 48,
                     child: Image.asset(
                       tabela[moeda].icone,
                     ),
@@ -72,7 +95,7 @@ class _MoedasPageState extends State<MoedasPage> {
         width: MediaQuery.of(context).size.width,
         height: 80,
         child: ElevatedButton(
-          child: Text("Press me"),
+          child: const Text("Press me"),
           onPressed: () {},
         ),
       ),
