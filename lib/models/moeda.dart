@@ -13,4 +13,10 @@ class Moeda {
     required this.preco,
   });
   
+  
+
+  @override
+  String toString() {
+    return 'MOEDA (Nome: $nome, Sigla: $sigla, Preco: $preco)';
+  }
 }

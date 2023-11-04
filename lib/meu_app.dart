@@ -9,7 +9,7 @@ class MeuApp extends StatelessWidget {
     return MaterialApp(
       title: "Cripto Moedas",
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(primarySwatch: Colors.indigo),
+      theme: ThemeData(primarySwatch: Colors.blueGrey),
       home: const MoedasPage(),
     );
   }
