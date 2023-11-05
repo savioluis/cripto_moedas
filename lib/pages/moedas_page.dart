@@ -1,4 +1,5 @@
 import 'package:cripto_moedas/models/moeda.dart';
+import 'package:cripto_moedas/pages/moedas_detalhes_page.dart';
 import 'package:cripto_moedas/repositories/moedas_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -22,26 +23,76 @@ class _MoedasPageState extends State<MoedasPage> {
     moedasRepository.sort();
   }
 
+  AppBar customAppBar() {
+    return moedasSelecionadas.isEmpty
+        ? AppBar(
+            title: const Text("Cripto Moedas"),
+            actions: [
+              IconButton(
+                padding: const EdgeInsets.only(right: 12),
+                onPressed: () => setState(() {
+                  moedasRepository.sort();
+                }),
+                icon: const Icon(
+                  Icons.swap_vert_circle,
+                  size: 32,
+                ),
+              ),
+            ],
+          )
+        : AppBar(
+            backgroundColor: Colors.blueGrey[400],
+            title: moedasSelecionadas.length == 1
+                ? const Text("1 selecionada")
+                : Text("${moedasSelecionadas.length} selecionadas"),
+            leading: IconButton(
+              padding: const EdgeInsets.only(left: 12),
+              icon: const Icon(
+                Icons.cancel_rounded,
+                size: 32,
+              ),
+              onPressed: () {
+                setState(() {
+                  moedasSelecionadas.clear();
+                });
+              },
+            ),
+            actions: [
+              IconButton(
+                padding: const EdgeInsets.only(right: 12),
+                onPressed: () => setState(() {
+                  moedasRepository.sort();
+                }),
+                icon: const Icon(
+                  Icons.swap_vert_circle,
+                  size: 32,
+                ),
+              ),
+            ],
+          );
+  }
+
+  mostrarDetalhes(Moeda moeda) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MoedasDetalhesPage(moeda: moeda),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Cripto Moedas"),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: IconButton(
-              onPressed: () => setState(() {
-                moedasRepository.sort();
-              }),
-              icon: const Icon(
-                Icons.swap_vert_circle,
-                size: 32,
-              ),
-            ),
-          ),
-        ],
-      ),
+      appBar: customAppBar(),
+      floatingActionButton: moedasSelecionadas.isNotEmpty
+          ? FloatingActionButton.extended(
+              onPressed: () {},
+              label: const Text("Favoritar"),
+              icon: const Icon(Icons.favorite),
+            )
+          : null,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       body: ListView.separated(
         shrinkWrap: true,
         itemBuilder: (context, moeda) {
@@ -50,7 +101,15 @@ class _MoedasPageState extends State<MoedasPage> {
               borderRadius: BorderRadius.all(Radius.circular(16)),
             ),
             onTap: () {
-              print(moedasSelecionadas);
+              if (moedasSelecionadas.isNotEmpty) {
+                setState(() {
+                  moedasSelecionadas.contains(tabela[moeda])
+                      ? moedasSelecionadas.remove(tabela[moeda])
+                      : moedasSelecionadas.add(tabela[moeda]);
+                });
+              } else {
+                mostrarDetalhes(tabela[moeda]);
+              }
             },
             leading: (moedasSelecionadas.contains(tabela[moeda]))
                 ? const SizedBox(
@@ -83,7 +142,7 @@ class _MoedasPageState extends State<MoedasPage> {
                     ? moedasSelecionadas.remove(tabela[moeda])
                     : moedasSelecionadas.add(tabela[moeda]);
               });
-              print('${tabela[moeda].nome} alterada na listsa');
+              // print('${tabela[moeda].nome} alterada na listsa');
             },
           );
         },
@@ -91,14 +150,14 @@ class _MoedasPageState extends State<MoedasPage> {
         separatorBuilder: (context, index) => const Divider(),
         itemCount: tabela.length,
       ),
-      bottomSheet: SizedBox(
-        width: MediaQuery.of(context).size.width,
-        height: 80,
-        child: ElevatedButton(
-          child: const Text("Press me"),
-          onPressed: () {},
-        ),
-      ),
+      // bottomSheet: SizedBox(
+      //   width: MediaQuery.of(context).size.width,
+      //   height: 80,
+      //   child: ElevatedButton(
+      //     child: const Text("Press me"),
+      //     onPressed: () {},
+      //   ),
+      // ),
     );
   }
 }
