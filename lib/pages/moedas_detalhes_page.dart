@@ -1,4 +1,6 @@
 import 'package:cripto_moedas/models/moeda.dart';
+import 'package:cripto_moedas/repositories/coins_repository.dart';
+import 'package:cripto_moedas/services/http_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -20,6 +22,7 @@ class _MoedasDetalhesPageState extends State<MoedasDetalhesPage> {
   final _formKey = GlobalKey<FormState>();
   final _controller = TextEditingController();
   double quantidade = 0;
+  HttpProvider provider = HttpProvider();
 
   comprar() {
     if (_formKey.currentState!.validate()) {
@@ -53,7 +56,7 @@ class _MoedasDetalhesPageState extends State<MoedasDetalhesPage> {
             children: [
               SizedBox(
                 height: 48,
-                child: Image.asset(widget.moeda.icone),
+                child: Image.network(widget.moeda.icone),
               ),
               const SizedBox(width: 10),
               Text(
@@ -136,34 +139,51 @@ class _MoedasDetalhesPageState extends State<MoedasDetalhesPage> {
             ),
           ),
           const SizedBox(height: 24),
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            margin: const EdgeInsets.only(top: 24),
+          // Container(
+          //   margin: const EdgeInsets.only(top: 24),
+          //   // width: MediaQuery.of(context).size.width,
+          //   child: ElevatedButton(
+          //     child: const Row(
+          //       mainAxisAlignment: MainAxisAlignment.center,
+          //       children: [
+          //         Icon(Icons.check),
+          //         Padding(
+          //           padding: EdgeInsets.all(16.0),
+          //           child: Text(
+          //             'Comprar',
+          //             style: TextStyle(
+          //               fontSize: 20,
+          //               fontWeight: FontWeight.w600,
+          //             ),
+          //           ),
+          //         ),
+          //       ],
+          //     ),
+          //     onPressed: () {
+          //       comprar();
+          //     },
+          //   ),
+          // )
+          SizedBox(
             width: MediaQuery.of(context).size.width,
-            child: ElevatedButton(
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.check),
-                  Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: Text(
-                      'Comprar',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.0)),
+                padding: const EdgeInsets.all(16),
+                textStyle: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
+              icon: const Icon(Icons.check),
+              label: const Text("Comprar"),
               onPressed: () {
                 comprar();
               },
             ),
-          )
+          ),
+          
         ],
       ),
     );
