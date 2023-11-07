@@ -1,13 +1,13 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
-class Moeda {
+class MoedaModel {
   String nome;
   String sigla;
   String icone;
   double preco;
 
-  Moeda({
+  MoedaModel({
     required this.nome,
     required this.sigla,
     required this.icone,
@@ -16,7 +16,7 @@ class Moeda {
 
   @override
   String toString() {
-    return 'MOEDA (nome: $nome, sigla: $sigla, preco: $preco)';
+    return 'Moeda (nome: $nome, sigla: $sigla, preco: $preco)';
   }
 
   Map<String, dynamic> toMap() {
@@ -28,8 +28,8 @@ class Moeda {
     };
   }
 
-  factory Moeda.fromMap(Map<String, dynamic> map) {
-    return Moeda(
+  factory MoedaModel.fromMap(Map<String, dynamic> map) {
+    return MoedaModel(
       nome: map['coinName'].toString().substring(0, map['coinName'].length-3),
       sigla: map['coin'] as String,
       icone: map['coinImageUrl'] as String,
@@ -39,6 +39,6 @@ class Moeda {
 
   String toJson() => json.encode(toMap());
 
-  factory Moeda.fromJson(String source) => Moeda.fromMap(json.decode(source) as Map<String, dynamic>);
+  factory MoedaModel.fromJson(String source) => MoedaModel.fromMap(json.decode(source) as Map<String, dynamic>);
 
 }

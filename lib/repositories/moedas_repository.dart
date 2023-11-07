@@ -1,55 +1,60 @@
 import 'package:cripto_moedas/models/moeda.dart';
+import 'package:cripto_moedas/services/http_provider.dart';
+import 'package:dio/dio.dart';
 
-class MoedasRepository {
+abstract class MoedasRepository {
+  Future<List<MoedaModel>> infoAllCoins();
+  Future<MoedaModel> getCoin(String coin);
+}
+
+class MoedasRepositoryImpl extends MoedasRepository {
   bool isSorted = false;
+  final HttpProvider provider;
 
-  static List<Moeda> tabela = [
-    Moeda(
-      nome: 'Bitcoin',
-      sigla: 'BTC',
-      icone: 'images/bitcoin.png',
-      preco: 164603.00,
-    ),
-    Moeda(
-      nome: 'Cardano',
-      sigla: 'ADA',
-      icone: 'images/cardano.png',
-      preco: 6.32,
-    ),
-    Moeda(
-      nome: 'Ethereum',
-      sigla: 'ETH',
-      icone: 'images/ethereum.png',
-      preco: 9716.00,
-    ),
-    Moeda(
-      nome: 'Litecoin',
-      sigla: 'LTC',
-      icone: 'images/litecoin.png',
-      preco: 669.93,
-    ),
-    Moeda(
-      nome: 'Dolar',
-      sigla: 'USD',
-      icone: 'images/usd.png',
-      preco: 5.02,
-    ),
-    Moeda(
-      nome: 'Xrp',
-      sigla: 'XRP',
-      icone: 'images/xrp.png',
-      preco: 3.34,
-    ),
-  ];
+  MoedasRepositoryImpl(this.provider);
 
-  void sort() {
-    if (!isSorted) {
-      tabela.sort((Moeda a, Moeda b) => a.preco.compareTo(b.preco));
-    } else {
-      tabela.sort((Moeda a, Moeda b) => b.preco.compareTo(a.preco));
-      // tabela = tabela.reversed.toList();
-      // Por que nao atualiza se for uma reatribuicao, somente funciona se for em uma funcao void ?
+  @override
+  Future<MoedaModel> getCoin(String coin) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<MoedaModel>> infoAllCoins() async {
+    final allCoinsString = await _searchAllCoins();
+    final List<MoedaModel> moedas = [];
+    try {
+      var request = await provider.get(
+        '?',
+        queryParameters: {"coin": allCoinsString},
+      );
+      for (var coin in request.data["coins"]) {
+        moedas.add(MoedaModel.fromMap(coin));
+      }
+      // print(moedas);
+      // return (request.data["coins"] as List)
+      //     .map((coin) => Moeda.fromMap(coin))
+      //     .toList();
+      return moedas;
+    } on DioException catch (e) {
+      rethrow;
     }
-    isSorted = !isSorted;
+  }
+
+  Future<String> _searchAllCoins() async {
+    String allCoins = "";
+    try {
+      var request = await provider.get(
+        '/available?',
+        queryParameters: {"token": "eJGEyu8vVHctULdVdHYzQd"},
+      );
+      for (var i = 0; i < request.data["coins"].length; i++) {
+        allCoins += i == request.data["coins"].length - 1
+            ? request.data["coins"][i]
+            : request.data["coins"][i] + ",";
+      }
+      return allCoins;
+    } on DioException catch (e) {
+      rethrow;
+    }
   }
 }

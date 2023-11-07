@@ -1,12 +1,11 @@
 import 'package:cripto_moedas/models/moeda.dart';
-import 'package:cripto_moedas/repositories/coins_repository.dart';
-import 'package:cripto_moedas/services/http_provider.dart';
+import 'package:cripto_moedas/utils/snack_bar_util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 class MoedasDetalhesPage extends StatefulWidget {
-  final Moeda moeda;
+  final MoedaModel moeda;
 
   const MoedasDetalhesPage({
     super.key,
@@ -22,22 +21,21 @@ class _MoedasDetalhesPageState extends State<MoedasDetalhesPage> {
   final _formKey = GlobalKey<FormState>();
   final _controller = TextEditingController();
   double quantidade = 0;
-  HttpProvider provider = HttpProvider();
 
-  comprar() {
+  void comprar() {
     if (_formKey.currentState!.validate()) {
       //Salvar compra
 
       Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Compra realizada com sucesso !',
-            style: TextStyle(fontWeight: FontWeight.w500, fontSize: 20),
-          ),
-        ),
-      );
+      SnackBarUtil.infoSnackBar(context,
+          '$quantidade de ${widget.moeda.nome}foi comprada por ${real.format(double.parse(_controller.value.text))}');
     }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _controller.dispose();
   }
 
   @override
@@ -183,7 +181,6 @@ class _MoedasDetalhesPageState extends State<MoedasDetalhesPage> {
               },
             ),
           ),
-          
         ],
       ),
     );

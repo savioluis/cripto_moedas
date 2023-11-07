@@ -1,7 +1,9 @@
 import 'package:cripto_moedas/models/moeda.dart';
 import 'package:cripto_moedas/pages/moedas_detalhes_page.dart';
-import 'package:cripto_moedas/repositories/coins_repository.dart';
+import 'package:cripto_moedas/repositories/moedas_repository.dart';
 import 'package:cripto_moedas/services/http_provider.dart';
+import 'package:cripto_moedas/utils/dialog_util.dart';
+import 'package:cripto_moedas/utils/snack_bar_util.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -15,25 +17,28 @@ class MoedasPage extends StatefulWidget {
 class _MoedasPageState extends State<MoedasPage> {
   NumberFormat real =
       NumberFormat.currency(locale: 'pt_BR', name: 'R\$', decimalDigits: 7);
-  List<Moeda> tabela = [];
+  List<MoedaModel> tabela = [];
+
   bool isLoading = true;
   bool isSorted = false;
 
-  CoinsRepository coinsRepository = CoinsRepositoryImpl(HttpProvider());
-  List<Moeda> moedasSelecionadas = [];
-  List<Moeda> favoriteCoins = [];
+  final provider = HttpProvider();
+  late MoedasRepository moedasRepository;
+
+  List<MoedaModel> moedasSelecionadas = [];
+  List<MoedaModel> moedasFavoritas = [];
 
   Future<void> loadData() async {
-    tabela = await coinsRepository.infoAllCoins();
+    tabela = await moedasRepository.infoAllCoins();
     setState(() {
       isLoading = false;
     });
   }
 
-  void sortCoins() {
+  void ordenarMoedas() {
     if (!isSorted) {
       setState(() {
-        tabela.sort((Moeda a, Moeda b) => a.preco.compareTo(b.preco));
+        tabela.sort((MoedaModel a, MoedaModel b) => a.preco.compareTo(b.preco));
       });
     } else {
       setState(() {
@@ -43,26 +48,28 @@ class _MoedasPageState extends State<MoedasPage> {
     isSorted = !isSorted;
   }
 
-  void favoritar(List<Moeda> moedas) {
+  void favoritar(List<MoedaModel> moedas) {
     setState(() {
       for (var moeda in moedas) {
-        if (!favoriteCoins.contains(moeda)) {
-          favoriteCoins.add(moeda);
+        if (!moedasFavoritas.contains(moeda)) {
+          moedasFavoritas.add(moeda);
         }
       }
       moedasSelecionadas.clear();
     });
+    SnackBarUtil.infoSnackBar(context, 'Lista de moedas favoritas atualizada');
+  }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Lista de favoritos atualizada com sucesso"),
-      ),
-    );
+  void desfavoritar(MoedaModel moeda) {
+    setState(() {
+      moedasFavoritas.remove(moeda);
+    });
   }
 
   @override
   void initState() {
     super.initState();
+    moedasRepository = MoedasRepositoryImpl(provider);
     loadData();
   }
 
@@ -73,7 +80,7 @@ class _MoedasPageState extends State<MoedasPage> {
             actions: [
               IconButton(
                 padding: const EdgeInsets.only(right: 12),
-                onPressed: () => sortCoins(),
+                onPressed: () => ordenarMoedas(),
                 icon: const Icon(
                   Icons.swap_vert_circle,
                   size: 32,
@@ -101,7 +108,7 @@ class _MoedasPageState extends State<MoedasPage> {
             actions: [
               IconButton(
                 padding: const EdgeInsets.only(right: 12),
-                onPressed: () => sortCoins(),
+                onPressed: () => ordenarMoedas(),
                 icon: const Icon(
                   Icons.swap_vert_circle,
                   size: 32,
@@ -111,7 +118,7 @@ class _MoedasPageState extends State<MoedasPage> {
           );
   }
 
-  mostrarDetalhes(Moeda moeda) {
+  void mostrarDetalhes(MoedaModel moeda) {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -131,89 +138,67 @@ class _MoedasPageState extends State<MoedasPage> {
         : Scaffold(
             appBar: customAppBar(),
             drawer: Drawer(
+              width: MediaQuery.of(context).size.width * 0.85,
               child: ListView(
+                physics: const NeverScrollableScrollPhysics(),
                 children: [
-                  const UserAccountsDrawerHeader(
-                    accountName: Text('nome'),
-                    accountEmail: Text('email'),
-                    currentAccountPicture: CircleAvatar(),
-                  ),
-                  const ListTile(
-                    leading: Icon(
-                      Icons.monetization_on,
-                      size: 48,
-                    ),
-                    title: Text(
+                  Container(
+                    margin: const EdgeInsets.symmetric(vertical: 32),
+                    child: const Text(
                       "Moedas Favoritas",
+                      textAlign: TextAlign.center,
                       style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.w400),
+                          TextStyle(fontSize: 28, fontWeight: FontWeight.w300),
                     ),
                   ),
                   const Divider(),
-                  ListView.separated(
-                      shrinkWrap: true,
-                      itemBuilder: (context, moeda) {
-                        return ListTile(
-                          leading: Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              image: DecorationImage(
-                                fit: BoxFit.fill,
-                                image: NetworkImage(favoriteCoins[moeda].icone),
-                              ),
+                  moedasFavoritas.isEmpty
+                      ? Container(
+                          margin: EdgeInsets.only(
+                              top: MediaQuery.of(context).size.height * 0.25),
+                          child: const Text(
+                            "A lista esta vazia 😢",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w200,
                             ),
                           ),
-                          title: Text(favoriteCoins[moeda].nome),
-                          onTap: () {
-                            Navigator.pop(context);
-                            mostrarDetalhes(favoriteCoins[moeda]);
-                          },
-                          onLongPress: () {
-                            showDialog(
-                              context: context,
-                              builder: (context) {
-                                return AlertDialog(
-                                  title: const Text("Aviso"),
-                                  content: Text(
-                                      "Deseja remover ${favoriteCoins[moeda].nome} dos favoritos ?"),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                      },
-                                      child: const Text("Cancelar"),
-                                    ),
-                                    TextButton(
-                                      onPressed: () {
-                                        setState(() {
-                                          favoriteCoins
-                                              .remove(favoriteCoins[moeda]);
-                                        });
-                                        Navigator.pop(context);
-                                        Navigator.pop(context);
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          const SnackBar(
-                                            content:
-                                                Text("A lista foi atualizada"),
-                                          ),
-                                        );
-                                      },
-                                      child: const Text("Remover"),
-                                    ),
-                                  ],
+                        )
+                      : ListView.separated(
+                          shrinkWrap: true,
+                          itemBuilder: (context, moeda) {
+                            return ListTile(
+                              leading: Container(
+                                width: 48,
+                                height: 48,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  image: DecorationImage(
+                                    fit: BoxFit.fill,
+                                    image: NetworkImage(
+                                        moedasFavoritas[moeda].icone),
+                                  ),
+                                ),
+                              ),
+                              title: Text(moedasFavoritas[moeda].nome),
+                              onTap: () {
+                                Navigator.pop(context);
+                                mostrarDetalhes(moedasFavoritas[moeda]);
+                              },
+                              onLongPress: () {
+                                DialogUtil.desfavoritarDialog(
+                                  context,
+                                  moedasFavoritas[moeda],
+                                  () => desfavoritar(moedasFavoritas[moeda]),
                                 );
                               },
                             );
                           },
-                        );
-                      },
-                      separatorBuilder: (context, index) {
-                        return const Divider();
-                      },
-                      itemCount: favoriteCoins.length)
+                          separatorBuilder: (context, index) {
+                            return const Divider();
+                          },
+                          itemCount: moedasFavoritas.length)
                 ],
               ),
             ),
