@@ -19,8 +19,9 @@ class _MoedasPageState extends State<MoedasPage> {
   bool isLoading = true;
   bool isSorted = false;
 
-  List<Moeda> moedasSelecionadas = [];
   CoinsRepository coinsRepository = CoinsRepositoryImpl(HttpProvider());
+  List<Moeda> moedasSelecionadas = [];
+  List<Moeda> favoriteCoins = [];
 
   Future<void> loadData() async {
     tabela = await coinsRepository.infoAllCoins();
@@ -40,6 +41,23 @@ class _MoedasPageState extends State<MoedasPage> {
       });
     }
     isSorted = !isSorted;
+  }
+
+  void favoritar(List<Moeda> moedas) {
+    setState(() {
+      for (var moeda in moedas) {
+        if (!favoriteCoins.contains(moeda)) {
+          favoriteCoins.add(moeda);
+        }
+      }
+      moedasSelecionadas.clear();
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Lista de favoritos atualizada com sucesso"),
+      ),
+    );
   }
 
   @override
@@ -112,9 +130,98 @@ class _MoedasPageState extends State<MoedasPage> {
           )
         : Scaffold(
             appBar: customAppBar(),
+            drawer: Drawer(
+              child: ListView(
+                children: [
+                  const UserAccountsDrawerHeader(
+                    accountName: Text('nome'),
+                    accountEmail: Text('email'),
+                    currentAccountPicture: CircleAvatar(),
+                  ),
+                  const ListTile(
+                    leading: Icon(
+                      Icons.monetization_on,
+                      size: 48,
+                    ),
+                    title: Text(
+                      "Moedas Favoritas",
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.w400),
+                    ),
+                  ),
+                  const Divider(),
+                  ListView.separated(
+                      shrinkWrap: true,
+                      itemBuilder: (context, moeda) {
+                        return ListTile(
+                          leading: Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              image: DecorationImage(
+                                fit: BoxFit.fill,
+                                image: NetworkImage(favoriteCoins[moeda].icone),
+                              ),
+                            ),
+                          ),
+                          title: Text(favoriteCoins[moeda].nome),
+                          onTap: () {
+                            Navigator.pop(context);
+                            mostrarDetalhes(favoriteCoins[moeda]);
+                          },
+                          onLongPress: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                  title: const Text("Aviso"),
+                                  content: Text(
+                                      "Deseja remover ${favoriteCoins[moeda].nome} dos favoritos ?"),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                      child: const Text("Cancelar"),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          favoriteCoins
+                                              .remove(favoriteCoins[moeda]);
+                                        });
+                                        Navigator.pop(context);
+                                        Navigator.pop(context);
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                            content:
+                                                Text("A lista foi atualizada"),
+                                          ),
+                                        );
+                                      },
+                                      child: const Text("Remover"),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          },
+                        );
+                      },
+                      separatorBuilder: (context, index) {
+                        return const Divider();
+                      },
+                      itemCount: favoriteCoins.length)
+                ],
+              ),
+            ),
             floatingActionButton: moedasSelecionadas.isNotEmpty
                 ? FloatingActionButton.extended(
-                    onPressed: () {},
+                    onPressed: () {
+                      favoritar(moedasSelecionadas);
+                    },
                     label: const Text("Favoritar"),
                     icon: const Icon(Icons.favorite),
                   )
