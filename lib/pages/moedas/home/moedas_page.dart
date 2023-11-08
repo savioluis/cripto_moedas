@@ -1,5 +1,7 @@
 import 'package:cripto_moedas/models/moeda.dart';
-import 'package:cripto_moedas/pages/moedas_detalhes_page.dart';
+import 'package:cripto_moedas/pages/auth/auth_page.dart';
+import 'package:cripto_moedas/pages/auth/auth_page_controller.dart';
+import 'package:cripto_moedas/pages/moedas/detalhes/moedas_detalhes_page.dart';
 import 'package:cripto_moedas/repositories/moedas_repository.dart';
 import 'package:cripto_moedas/services/http_provider.dart';
 import 'package:cripto_moedas/utils/dialog_util.dart';
@@ -152,6 +154,26 @@ class _MoedasPageState extends State<MoedasPage> {
                     ),
                   ),
                   const Divider(),
+                  ListTile(
+                    leading: const Icon(Icons.home),
+                    title: const Text("Moedas"),
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.logout),
+                    title: const Text("Sair"),
+                    onTap: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => AuthPage(controller: AuthPageController()),
+                        ),
+                      );
+                    },
+                  ),
+                  const Divider(),
                   moedasFavoritas.isEmpty
                       ? Container(
                           margin: EdgeInsets.only(
@@ -198,7 +220,8 @@ class _MoedasPageState extends State<MoedasPage> {
                           separatorBuilder: (context, index) {
                             return const Divider();
                           },
-                          itemCount: moedasFavoritas.length)
+                          itemCount: moedasFavoritas.length,
+                        ),
                 ],
               ),
             ),

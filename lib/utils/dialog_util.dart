@@ -11,7 +11,7 @@ class DialogUtil {
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
+        return AlertDialog.adaptive(
           title: const Text("Aviso"),
           content: Text("Deseja remover ${moeda.nome} dos favoritos ?"),
           actions: [
