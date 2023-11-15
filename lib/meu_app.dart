@@ -1,3 +1,4 @@
+import 'package:cripto_moedas/pages/home_page.dart';
 import 'package:cripto_moedas/pages/moedas_page.dart';
 import 'package:flutter/material.dart';
 
@@ -10,7 +11,7 @@ class MeuApp extends StatelessWidget {
       title: "Cripto Moedas",
       debugShowCheckedModeBanner: false,
       theme: ThemeData(primarySwatch: Colors.blueGrey),
-      home: const MoedasPage(),
+      home: const HomePage(),
     );
   }
 }

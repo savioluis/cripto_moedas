@@ -1,8 +1,10 @@
 import 'package:cripto_moedas/models/moeda.dart';
 import 'package:cripto_moedas/pages/moedas_detalhes_page.dart';
+import 'package:cripto_moedas/repositories/favoritas_repository.dart';
 import 'package:cripto_moedas/repositories/moedas_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class MoedasPage extends StatefulWidget {
   const MoedasPage({super.key});
@@ -16,6 +18,7 @@ class _MoedasPageState extends State<MoedasPage> {
   List<Moeda> moedasSelecionadas = [];
   List<Moeda> tabela = MoedasRepository.tabela;
   final moedasRepository = MoedasRepository();
+  late FavoritasRepository favoritas;
 
   @override
   void initState() {
@@ -81,13 +84,25 @@ class _MoedasPageState extends State<MoedasPage> {
     );
   }
 
+  limparSelecionadas() {
+    setState(() {
+      moedasSelecionadas.clear();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    // favoritas = Provider.of<FavoritasRepository>(context);
+    favoritas = context.watch<FavoritasRepository>();
+
     return Scaffold(
       appBar: customAppBar(),
       floatingActionButton: moedasSelecionadas.isNotEmpty
           ? FloatingActionButton.extended(
-              onPressed: () {},
+              onPressed: () {
+                favoritas.saveAll(moedasSelecionadas);
+                limparSelecionadas();
+              },
               label: const Text("Favoritar"),
               icon: const Icon(Icons.favorite),
             )
